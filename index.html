@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine Cat Classifier</title>
+    
+    <!-- Import Google Fonts (for custom text styling) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Optional custom styling -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Teachable Machine Cat Classifier</h1>
+
+        <!-- Button to trigger file upload -->
+        <input type="file" accept="image/*" onchange="handleFileUpload(event)" class="file-input">
+    
+        <div id="image-container"></div>
+        <div id="label-container"></div>
+
+        <!-- Import TensorFlow.js and Teachable Machine libraries -->
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+        
+        <!-- Custom script -->
+        <script src="script.js"></script>
+    </div>
+</body>
+</html>
