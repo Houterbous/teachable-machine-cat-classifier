@@ -18,26 +18,26 @@
         let model;
 
         async function loadModel() {
-            try {
+            if (typeof tmImage !== "undefined") {
                 model = await tmImage.load(modelURL + "model.json", modelURL + "metadata.json");
                 console.log("Model loaded successfully");
-            } catch (error) {
-                console.error("Error loading model:", error);
+            } else {
+                console.error("tmImage is not defined. The Teachable Machine library might not be loading properly.");
             }
         }
 
         document.getElementById("imageUpload").addEventListener("change", async function(event) {
             if (!model) {
                 await loadModel();
+                if (!model) {
+                    document.getElementById("result").innerText = "Failed to load model.";
+                    return;
+                }
             }
             
             const file = event.target.files[0];
-            if (!file) return;
-            
             const img = new Image();
-            img.crossOrigin = "anonymous";  // Добавляем для избежания проблем с CORS
             img.src = URL.createObjectURL(file);
-
             img.onload = async function() {
                 const canvas = document.getElementById("canvas");
                 const ctx = canvas.getContext("2d");
