@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine Cat Classifier</title>
+</head>
+<body>
+    <h1>Teachable Machine Cat Classifier</h1>
+    <input type="file" accept="image/*" id="imageUpload">
+    <img id="uploadedImage" style="max-width: 300px; display: none;">
+    <p id="result">Upload an image to classify</p>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+    <script>
+        const URL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
+        let model, maxPredictions;
+
+        async function init() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+        }
+
+        async function predict(imageElement) {
+            const prediction = await model.predict(imageElement);
+            let highestProb = 0;
+            let bestMatch = "";
+            prediction.forEach(pred => {
+                if (pred.probability > highestProb) {
+                    highestProb = pred.probability;
+                    bestMatch = pred.className;
+                }
+            });
+            document.getElementById("result").innerText = `Prediction: ${bestMatch}`;
+        }
+
+        document.getElementById("imageUpload").addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById("uploadedImage");
+                    img.src = e.target.result;
+                    img.style.display = "block";
+                    img.onload = () => predict(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
