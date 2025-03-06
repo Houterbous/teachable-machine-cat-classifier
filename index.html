@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teachable Machine Cat Classifier</title>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+    <!-- Подключаем Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest" defer></script>
 </head>
 <body>
 
@@ -14,27 +15,33 @@
     <p id="result"></p>
 
     <script>
-        const modelURL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
         let model;
+        const modelURL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
 
         async function loadModel() {
-            if (typeof tmImage !== "undefined") {
-                model = await tmImage.load(modelURL + "model.json", modelURL + "metadata.json");
-                console.log("Model loaded successfully");
-            } else {
-                console.error("tmImage is not defined. The Teachable Machine library might not be loading properly.");
+            try {
+                if (window.tmImage) {  // Ждем загрузки библиотеки
+                    model = await tmImage.load(modelURL + "model.json", modelURL + "metadata.json");
+                    console.log("✅ Model loaded successfully!");
+                } else {
+                    throw new Error("tmImage is not loaded. Check the script source.");
+                }
+            } catch (error) {
+                console.error("❌ Error loading model:", error);
+                document.getElementById("result").innerText = "Failed to load model.";
             }
         }
 
+        document.addEventListener("DOMContentLoaded", () => {
+            loadModel();  // Загружаем модель после полной загрузки DOM
+        });
+
         document.getElementById("imageUpload").addEventListener("change", async function(event) {
             if (!model) {
-                await loadModel();
-                if (!model) {
-                    document.getElementById("result").innerText = "Failed to load model.";
-                    return;
-                }
+                document.getElementById("result").innerText = "Model is not loaded yet!";
+                return;
             }
-            
+
             const file = event.target.files[0];
             const img = new Image();
             img.src = URL.createObjectURL(file);
@@ -45,19 +52,18 @@
                 canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
 
-                if (model) {
+                try {
                     const prediction = await model.predict(canvas);
                     document.getElementById("result").innerHTML = prediction.map(p => 
                         `${p.className}: ${(p.probability * 100).toFixed(2)}%`
                     ).join("<br>");
-                } else {
-                    document.getElementById("result").innerText = "Model not loaded.";
+                } catch (error) {
+                    console.error("❌ Prediction error:", error);
+                    document.getElementById("result").innerText = "Prediction failed.";
                 }
             };
         });
 
-        // Загружаем модель сразу после загрузки страницы
-        loadModel();
     </script>
 
 </body>
