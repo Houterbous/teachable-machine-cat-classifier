@@ -18,8 +18,12 @@
         let model;
 
         async function loadModel() {
-            model = await tmImage.load(modelURL + "model.json", modelURL + "metadata.json");
-            console.log("Model loaded successfully");
+            if (window.tmImage) {
+                model = await window.tmImage.load(modelURL + "model.json", modelURL + "metadata.json");
+                console.log("Model loaded successfully");
+            } else {
+                console.error("tmImage is not defined. Check if the library is properly loaded.");
+            }
         }
 
         document.getElementById("imageUpload").addEventListener("change", async function(event) {
@@ -37,13 +41,14 @@
                 canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
 
-                // Используем `tmImage`, убедившись, что оно загружено
-                const tmImg = new tmImage.Image(model);
-                const prediction = await tmImg.predict(img);
-
-                document.getElementById("result").innerHTML = prediction.map(p => 
-                    `${p.className}: ${(p.probability * 100).toFixed(2)}%`
-                ).join("<br>");
+                if (model) {
+                    const prediction = await model.predict(img);
+                    document.getElementById("result").innerHTML = prediction.map(p => 
+                        `${p.className}: ${(p.probability * 100).toFixed(2)}%`
+                    ).join("<br>");
+                } else {
+                    document.getElementById("result").innerText = "Model not loaded.";
+                }
             };
         });
 
