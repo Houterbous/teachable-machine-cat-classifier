@@ -3,57 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Распознавание породы кошек</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/3.9.0/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        #image-preview { max-width: 300px; margin: 10px; }
-    </style>
+    <title>Teachable Machine Cat Classifier</title>
+    
+    <!-- Import Google Fonts (for custom text styling) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Optional custom styling -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Определение породы кошек</h1>
-    <input type="file" id="upload-image" accept="image/*">
-    <br>
-    <img id="image-preview" src="#" alt="Предпросмотр" style="display: none;">
-    <p id="result"></p>
+    <div class="container">
+        <h1 class="title">Teachable Machine Cat Classifier</h1>
+
+        <!-- Button to trigger file upload -->
+        <input type="file" accept="image/*" onchange="handleFileUpload(event)" class="file-input">
     
-    <script>
-        let model;
-        async function loadModel() {
-            try {
+        <div id="image-container"></div>
+        <div id="label-container"></div>
+
+        <!-- Import TensorFlow.js and Teachable Machine libraries -->
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+        
+        <script>
+            let model;
+            async function loadModel() {
                 const URL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
-                model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+                model = await tm.image.load(URL + "model.json", URL + "metadata.json");
                 console.log("Модель загружена!");
-            } catch (error) {
-                console.error("Ошибка загрузки модели:", error);
             }
-        }
-        loadModel();
+            loadModel();
 
-        document.getElementById("upload-image").addEventListener("change", async function(event) {
-            let file = event.target.files[0];
-            if (file) {
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    let img = document.getElementById("image-preview");
-                    img.src = e.target.result;
-                    img.style.display = "block";
-                    classifyImage(img);
-                };
-                reader.readAsDataURL(file);
+            function handleFileUpload(event) {
+                let file = event.target.files[0];
+                if (file) {
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        let img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.classList.add("uploaded-image");
+                        document.getElementById("image-container").innerHTML = "";
+                        document.getElementById("image-container").appendChild(img);
+                        classifyImage(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
             }
-        });
 
-        async function classifyImage(image) {
-            if (!model) {
-                document.getElementById("result").innerText = "Модель еще загружается...";
-                return;
+            async function classifyImage(image) {
+                if (!model) {
+                    document.getElementById("label-container").innerText = "Модель еще загружается...";
+                    return;
+                }
+                const prediction = await model.predict(image);
+                let topPrediction = prediction.sort((a, b) => b.probability - a.probability)[0];
+                document.getElementById("label-container").innerText = `Результат: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)`;
             }
-            const prediction = await model.predict(image);
-            let topPrediction = prediction.sort((a, b) => b.probability - a.probability)[0];
-            document.getElementById("result").innerText = `Результат: ${topPrediction.className} (${(topPrediction.probability * 100).toFixed(2)}%)`;
-        }
-    </script>
+        </script>
+    </div>
 </body>
 </html>
