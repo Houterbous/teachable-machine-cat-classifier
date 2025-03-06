@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Распознавание породы кошек</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/3.9.0/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         #image-preview { max-width: 300px; margin: 10px; }
@@ -21,19 +20,16 @@
     
     <script>
         let model;
-
-async function loadModel() {
-    try {
-        const URL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
-        model = await tmImage.load(URL + "model.json", URL + "metadata.json");
-        console.log("Модель загружена!");
-    } catch (error) {
-        console.error("Ошибка загрузки модели:", error);
-    }
-}
-
-// Вызываем функцию загрузки модели
-loadModel();
+        async function loadModel() {
+            try {
+                const URL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
+                model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+                console.log("Модель загружена!");
+            } catch (error) {
+                console.error("Ошибка загрузки модели:", error);
+            }
+        }
+        loadModel();
 
         document.getElementById("upload-image").addEventListener("change", async function(event) {
             let file = event.target.files[0];
