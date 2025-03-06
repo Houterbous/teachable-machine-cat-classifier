@@ -21,11 +21,19 @@
     
     <script>
         let model;
-        async function loadModel() {
-            model = await tmImage.load("https://teachablemachine.withgoogle.com/models/Wj3dFXubB/model.json", "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/metadata.json");
-            console.log("Модель загружена!");
-        }
-        loadModel();
+
+async function loadModel() {
+    try {
+        const URL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
+        model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+        console.log("Модель загружена!");
+    } catch (error) {
+        console.error("Ошибка загрузки модели:", error);
+    }
+}
+
+// Вызываем функцию загрузки модели
+loadModel();
 
         document.getElementById("upload-image").addEventListener("change", async function(event) {
             let file = event.target.files[0];
