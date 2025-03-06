@@ -4,54 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teachable Machine Cat Classifier</title>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
 </head>
 <body>
-    <h1>Teachable Machine Cat Classifier</h1>
-    <input type="file" accept="image/*" id="imageUpload">
-    <img id="uploadedImage" style="max-width: 300px; display: none;">
-    <p id="result">Upload an image to classify</p>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+    <h1>Cat Breed Classifier</h1>
+    <input type="file" id="imageUpload" accept="image/*">
+    <br>
+    <canvas id="canvas" style="max-width: 300px; margin-top: 10px;"></canvas>
+    <p id="result"></p>
+
     <script>
-        const URL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
-        let model, maxPredictions;
+        const modelURL = "https://teachablemachine.withgoogle.com/models/Wj3dFXubB/";
+        let model;
 
-        async function init() {
-            const modelURL = URL + "model.json";
-            const metadataURL = URL + "metadata.json";
-            model = await tmImage.load(modelURL, metadataURL);
-            maxPredictions = model.getTotalClasses();
+        async function loadModel() {
+            model = await tmImage.load(modelURL + "model.json", modelURL + "metadata.json");
+            console.log("Model loaded successfully");
         }
 
-        async function predict(imageElement) {
-            const prediction = await model.predict(imageElement);
-            let highestProb = 0;
-            let bestMatch = "";
-            prediction.forEach(pred => {
-                if (pred.probability > highestProb) {
-                    highestProb = pred.probability;
-                    bestMatch = pred.className;
-                }
-            });
-            document.getElementById("result").innerText = `Prediction: ${bestMatch}`;
-        }
-
-        document.getElementById("imageUpload").addEventListener("change", function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById("uploadedImage");
-                    img.src = e.target.result;
-                    img.style.display = "block";
-                    img.onload = () => predict(img);
-                };
-                reader.readAsDataURL(file);
+        document.getElementById("imageUpload").addEventListener("change", async function(event) {
+            if (!model) {
+                await loadModel();
             }
+            
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = async function() {
+                const canvas = document.getElementById("canvas");
+                const ctx = canvas.getContext("2d");
+
+                // Фиксированный размер для лучшей классификации
+                const imgWidth = 224;
+                const imgHeight = 224;
+
+                canvas.width = imgWidth;
+                canvas.height = imgHeight;
+                ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
+
+                // Используем canvas как input для модели
+                const prediction = await model.predict(canvas);
+                document.getElementById("result").innerHTML = prediction.map(p => 
+                    `${p.className}: ${(p.probability * 100).toFixed(2)}%`
+                ).join("<br>");
+            };
         });
 
-        init();
+        // Загружаем модель при загрузке страницы
+        loadModel();
     </script>
+
 </body>
 </html>
