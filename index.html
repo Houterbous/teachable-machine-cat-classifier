@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teachable Machine Cat Classifier</title>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
 </head>
 <body>
 
     <h1>Cat Breed Classifier</h1>
-    <input type="file" id="imageUpload" accept="image/*">
-    <br>
-    <canvas id="canvas" style="max-width: 300px; margin-top: 10px;"></canvas>
+    <input type="file" id="imageUpload">
+    <canvas id="canvas"></canvas>
     <p id="result"></p>
 
     <script>
@@ -29,31 +28,26 @@
             }
             
             const file = event.target.files[0];
-            if (!file) return;
-            
             const img = new Image();
             img.src = URL.createObjectURL(file);
             img.onload = async function() {
                 const canvas = document.getElementById("canvas");
                 const ctx = canvas.getContext("2d");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
 
-                // Фиксированный размер для лучшей классификации
-                const imgWidth = 224;
-                const imgHeight = 224;
+                // Используем `tmImage`, убедившись, что оно загружено
+                const tmImg = new tmImage.Image(model);
+                const prediction = await tmImg.predict(img);
 
-                canvas.width = imgWidth;
-                canvas.height = imgHeight;
-                ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
-
-                // Используем canvas как input для модели
-                const prediction = await model.predict(canvas);
                 document.getElementById("result").innerHTML = prediction.map(p => 
                     `${p.className}: ${(p.probability * 100).toFixed(2)}%`
                 ).join("<br>");
             };
         });
 
-        // Загружаем модель при загрузке страницы
+        // Загружаем модель сразу после загрузки страницы
         loadModel();
     </script>
 
